@@ -4,7 +4,7 @@ while 1
     while ~ModBusTCP.BytesAvailable
         % wait for the response to be in the buffer
     end
-   requestInfo = handleRequest(ModBusTCP,DataBase)
+   DataBase = handleRequest(ModBusTCP,DataBase)
 end
 
 function ModBusTCP = openConnection(ipaddress, port)
@@ -28,35 +28,60 @@ function ModBusTCP = openConnection(ipaddress, port)
     end
 end
 
-function [FunCod,AddressOffset,RegNumber] = handleRequest(ModBusTCP,DataBase)
+function UpdatedDataBase = handleRequest(ModBusTCP,DataBase)
     % check if the message is received correctly
     TransID = fread(ModBusTCP,1, 'int16');
     ProtID =  fread(ModBusTCP,1, 'int16');
     Lenght =  fread(ModBusTCP,1, 'int16');
-    
     UnitID = fread(ModBusTCP,1, 'int8');
-    if UnitID != SlaveID
-        FunCod = -1
-        return
-    end
     FunCod = fread(ModBusTCP,1, 'int8');
-    AddressOffset = fread(ModBusTCP,1, 'int16');
-    RegNumber = fread(ModBusTCP,1, 'int16');
    
     switch FunCod
         case 4
             disp('Read Input Registers'); 
+            
+            UpdatedDataBase = DataBase;
             return
         case 3
             disp('Read Multiple Holding Registers'); 
+            
+            UpdatedDataBase = DataBase;
             return
         case 6
-            disp('Write Single Holding Register'); 
+            disp('Wrote Single Holding Register'); 
             return
         case 16
-            disp('Write Multiple Holding Registers'); 
+            disp('Wrote Multiple Holding Registers');
+            
+            return 
+        otherwise 5 % Not tested
+            FunCodResponce = int16(-2);
+            Length = int16(ModbusHeaderLenght + ByteSizeInt(FunCodResponce));
+            message = [transID; ProtID; Lenght; UnitID; FunCod];
+            fwrite(ModBusTCP, message,'int8');
+            
+            disp('Recived bad Request');
+            UpdatedDataBase = DataBase;
             return
-        otherwise
-            FunCod = -2
     end
+end
+
+
+% ========== Supporting functions ========== 
+function bytes = ByteSizeInt(variable)
+    string = class(variable);
+    bitsString = extractAfter(string,"int");
+    if isempty(bitsString)
+        error('Input must be int or uint')
+        return
+    end
+    bits = str2num(bitsString);
+    bytes = bits/8;
+end
+
+% ========== Constants ========== 
+function ans = ModbusHeaderLenght
+    % As the header is [transID; ProtID; Lenght; UnitID]
+    % The defined length is 7*8bit
+    ans = 7;
 end

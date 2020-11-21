@@ -1,8 +1,8 @@
-
+    
 ModBusTCP = openConnection(ipaddress, port)
 while 1
     while ~ModBusTCP.BytesAvailable
-        % wait for the response to be in the buffer
+        %wait for the response to be in the buffer
     end
    DataBase = handleRequest(ModBusTCP,DataBase)
 end
@@ -28,14 +28,15 @@ function ModBusTCP = openConnection(ipaddress, port)
     end
 end
 
-function UpdatedDataBase = handleRequest(ModBusTCP,DataBase)
-    % check if the message is received correctly
+function UpdatedDataBase = handleRequest(ModBusTCP,DataBaseHolding)
+    % Read MBAP
     TransID = fread(ModBusTCP,1, 'int16');
     ProtID =  fread(ModBusTCP,1, 'int16');
     Lenght =  fread(ModBusTCP,1, 'int16');
     UnitID = fread(ModBusTCP,1, 'int8');
+    
+    %Handle PDU
     FunCod = fread(ModBusTCP,1, 'int8');
-   
     switch FunCod
         case 4
             disp('Read Input Registers'); 
@@ -43,25 +44,61 @@ function UpdatedDataBase = handleRequest(ModBusTCP,DataBase)
             UpdatedDataBase = DataBase;
             return
         case 3
-            disp('Read Multiple Holding Registers'); 
+            %Read command
+            StartingAdress = fread(ModBusTCP,1, 'int16');
+            NumberOfRegisters = fread(ModBusTCP,1, 'int16');
             
-            UpdatedDataBase = DataBase;
+            %Check if registers are available
+            if IsExceeded(StartingAdress,NumberOfRegisters,DataBaseHolding)
+                %Build PDU
+                PDU = uint8(131); %Error cod: 0x83
+                PDU = [PDU uint8(2)]; % Exception code: ILLEGAL DATA ADDRESS
+                
+                %Build MBAP
+                Length = int16(ModbusHeaderLenght + 16);
+                MBAP = [transID; ProtID; Lenght; UnitID];
+                disp('Read Multiple Holding Registers - ERROR');                
+            
+            else
+                %Build MBAP
+                Length = int16(ModbusHeaderLenght + NumberOfRegisters*2);
+                MBAP = [transID; ProtID; Lenght; UnitID];
+
+                %Build PDU
+                PDU = FunCod;
+                for Index = 0:1:NumberOfRegisters-1
+                    PDU = [PDU int16(DataBaseHolding(StartingAdress+Index))]
+                end
+                disp('Read Multiple Holding Registers');    
+            end
+            
+            %Send Message
+            Message = [MBAP PDU];
+            fwrite(ModBusTCP, Message,'int8');
+            UpdatedDataBase = DataBaseHolding; 
             return
         case 6
-            disp('Wrote Single Holding Register'); 
+            
+            
+            disp('Wrote Single Holding Register');
+            
             return
         case 16
-            disp('Wrote Multiple Holding Registers');
             
+            disp('Wrote Multiple Holding Registers');            
             return 
-        otherwise 5 % Not tested
+        otherwise % Not tested
             FunCodResponce = int16(-2);
             Length = int16(ModbusHeaderLenght + ByteSizeInt(FunCodResponce));
-            message = [transID; ProtID; Lenght; UnitID; FunCod];
-            fwrite(ModBusTCP, message,'int8');
+            
+            MBAP = [transID; ProtID; Lenght; UnitID];
+            PDU = [FunCod];
+            Message = [MBAP,PDU];
+            
+            fwrite(ModBusTCP, Message,'int8');
+            UpdatedDataBase = DataBaseHolding;
             
             disp('Recived bad Request');
-            UpdatedDataBase = DataBase;
             return
     end
 end
@@ -77,6 +114,12 @@ function bytes = ByteSizeInt(variable)
     end
     bits = str2num(bitsString);
     bytes = bits/8;
+end
+
+function bool =IsExceeded(StartingIndex,Number,Array)
+    Size = length(Array);
+    bool = StartingIndex + Number <= Size;
+    return
 end
 
 % ========== Constants ========== 

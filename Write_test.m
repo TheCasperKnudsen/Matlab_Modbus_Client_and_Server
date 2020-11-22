@@ -1,4 +1,4 @@
-address = '192.168.87.134' 
+address = '192.168.87.119' 
 port = 502 %port typically 502 for Modbus
 ModBusTCP = openConnection(address, port); %open the connection
 message = prepareWritingMessage(int32(33), 1);

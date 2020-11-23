@@ -65,10 +65,9 @@ function [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput
             disp('Wrote Single Holding Register');
             
             return
-        case 16
+        case 10
+   
             
-            disp('Wrote Multiple Holding Registers');            
-            return 
         otherwise % Not tested
             FunCodResponce = int16(-2);
             Length = int16(ModbusHeaderLength + ByteSizeInt(FunCodResponce));

@@ -4,10 +4,15 @@ function Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,Start
 
     %Check if registers are available
     if IsExceeded(StartingAdress,NumberOfRegisters,DataBaseHolding)
+        ErrorCode = uint8(131); %Error cod: 0x83
+        PDU = [ErrorCode; uint8(3)]; % Exception code:  ILLEGAL DATA VALUE
+        
+        if IsExceeded(StartingAdress,0,DataBaseHolding)
         %Build ERROR PDU
         ErrorCode = uint8(131); %Error cod: 0x83
         PDU = [ErrorCode; uint8(2)]; % Exception code: ILLEGAL DATA ADDRESS
-
+        end
+        
         %Build MBAP
         PDULength = ByteSizeInt(ErrorCode) + 1;
         Length = int16(ByteSizeInt(UnitID) + PDULength);

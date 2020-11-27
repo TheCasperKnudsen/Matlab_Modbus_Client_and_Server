@@ -60,11 +60,14 @@ function [UpdatedDataInput,UpdatedDataBaseHolding] = handleRequest(ModBusTCP,Dat
             return
             
         case 6
-            
-            
+            RegisterAdress          = fread16Bit(ModBusTCP);
+            RecivedData   = fread16Bit(ModBusTCP);
+            [Message,DataBaseHolding] = HandleFunctionCode6(TransID,ProtID,Length,UnitID,FunCod,RegisterAdress,RecivedData,DataBaseHolding)
             disp('Wrote Single Holding Register');
-            
+            fwrite(ModBusTCP, Message,'uint8');
+            UpdatedDataBaseHolding = DataBaseHolding; 
             return
+            
         case 16
             StartingAdress          = fread16Bit(ModBusTCP);
             NumberOfRegisters   = fread16Bit(ModBusTCP);

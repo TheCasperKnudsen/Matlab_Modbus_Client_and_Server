@@ -21,12 +21,12 @@ function [Message,DataBaseHolding] = HandleFunctionCode16(TransID,ProtID,Length,
     else
         %Save Data
         for index = 1:1:NumberOfRegisters
-            DataBaseHolding(StartingAdress+index-1) = RecivedData(index);
+            DataBaseHolding(StartingAdress+index-1) = swapbytes(RecivedData(index));
         end
         
         % Build PDU
         PrepedStartingAdress        =  typecast(StartingAdress,'uint8')';
-        PrepedNumberOfRegisters =  typecast(NumberOfRegisters,'uint8')';
+        PrepedNumberOfRegisters =  Prep16BitData(NumberOfRegisters,'uint8')';
         PDU  = [FunCod; PrepedStartingAdress; PrepedNumberOfRegisters];
         
         %Build MBAP

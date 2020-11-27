@@ -2,7 +2,7 @@ DataBaseHolding = uint16([111,222,333,444])
 DataBaseInput = uint16([11,22,33,44])
 
 while 1
-    ModBusTCP = openConnection('192.168.87.134', 502)
+    ModBusTCP = openConnectionServer('192.168.87.134', 502)
     while ~ModBusTCP.BytesAvailable
         %wait for the response to be in the buffer
     end
@@ -11,7 +11,7 @@ while 1
    break
 end
 
-function ModBusTCP = openConnection(ipaddress, port)
+function ModBusTCP = openConnectionServer(ipaddress, port)
     ModBusTCP=tcpip(ipaddress, port,'NetworkRole', 'Server'); %Create the tcpip obeject
     set(ModBusTCP, 'InputBufferSize', 512); %assign the buffer
     ModBusTCP.ByteOrder='bigEndian'; %specify the order in which bytes are transmitted
@@ -75,7 +75,7 @@ function [UpdatedDataInput,UpdatedDataBaseHolding] = handleRequest(ModBusTCP,Dat
                 %Recives Little endian data
                 RecivedData(index) = fread16Bit(ModBusTCP);
             end
-            [Message,DataBaseHolding] = HandleFunctionCode10(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding);
+            [Message,DataBaseHolding] = HandleFunctionCode16(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding);
             fwrite(ModBusTCP, Message,'uint8');
             UpdatedDataBaseHolding = DataBaseHolding; 
             return

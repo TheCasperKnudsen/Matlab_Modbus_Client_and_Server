@@ -1,4 +1,4 @@
-function [Message,DataBaseHolding] = HandleFunctionCode10(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding)
+function [Message,DataBaseHolding] = HandleFunctionCode16(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding)
 %HANDLEFUNCTIONCODE10 Handels formating, exceptions and saveing of data for 'Write Multiple Registers''.
 
     %Check if registers are available
@@ -21,8 +21,7 @@ function [Message,DataBaseHolding] = HandleFunctionCode10(TransID,ProtID,Length,
     else
         %Save Data
         for index = 1:1:NumberOfRegisters
-            %Swaps to Big Endian for x86 and saves in database
-            DataBaseHolding(StartingAdress+index-1) = swapbytes(RecivedData(index));
+            DataBaseHolding(StartingAdress+index-1) = RecivedData(index);
         end
         
         % Build PDU

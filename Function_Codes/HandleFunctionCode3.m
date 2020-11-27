@@ -8,9 +8,9 @@ function Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,Start
         PDU = [ErrorCode; uint8(3)]; % Exception code:  ILLEGAL DATA VALUE
         
         if IsExceeded(StartingAdress,0,DataBaseHolding)
-        %Build ERROR PDU
-        ErrorCode = uint8(131); %Error cod: 0x83
-        PDU = [ErrorCode; uint8(2)]; % Exception code: ILLEGAL DATA ADDRESS
+            %Build ERROR PDU
+            ErrorCode = uint8(131); %Error cod: 0x83
+            PDU = [ErrorCode; uint8(2)]; % Exception code: ILLEGAL DATA ADDRESS
         end
         
         %Build MBAP

@@ -6,9 +6,9 @@ while 1
     while ~ModBusTCP.BytesAvailable
         %wait for the response to be in the buffer
     end
-   [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding)
+   [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding);
    fclose(ModBusTCP);
-   break;
+   break
 end
 
 function ModBusTCP = openConnection(ipaddress, port)
@@ -32,7 +32,8 @@ function ModBusTCP = openConnection(ipaddress, port)
     end
 end
 
-function [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding)
+function [UpdatedDataInput,UpdatedDataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding)
+    UpdatedDataInput = DataBaseInput; % Input cannot be written
     % Read MBAP
     TransID    = fread16Bit(ModBusTCP);
     ProtID      = fread16Bit(ModBusTCP);
@@ -48,7 +49,6 @@ function [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput
             NumberOfRegisters   = fread16Bit(ModBusTCP);
             Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,DataBaseInput);
             fwrite(ModBusTCP, Message,'uint8');
-            UpdatedDataInput = DataBaseInput; 
             return
             
         case 3 % Read Multiple Holding Registers
@@ -56,7 +56,7 @@ function [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput
             NumberOfRegisters   = fread16Bit(ModBusTCP);
             Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,DataBaseHolding);
             fwrite(ModBusTCP, Message,'uint8');
-            UpdatedDataBase = DataBaseHolding; 
+            UpdatedDataBaseHolding = DataBaseHolding; 
             return
             
         case 6
@@ -65,19 +65,23 @@ function [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput
             disp('Wrote Single Holding Register');
             
             return
-        case 10
-   
+        case 16
+            StartingAdress          = fread16Bit(ModBusTCP);
+            NumberOfRegisters   = fread16Bit(ModBusTCP);
+            ByteCount                = fread8Bit(ModBusTCP);
+            %Read Data from Modbus
+            RecivedData = uint16(zeros(NumberOfRegisters,1));
+            for index = 1:1:NumberOfRegisters
+                %Recives Little endian data
+                RecivedData(index) = fread16Bit(ModBusTCP);
+            end
+            [Message,DataBaseHolding] = HandleFunctionCode10(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding);
+            fwrite(ModBusTCP, Message,'uint8');
+            UpdatedDataBaseHolding = DataBaseHolding; 
+            return
             
         otherwise % Not tested
-            FunCodResponce = int16(-2);
-            Length = int16(ModbusHeaderLength + ByteSizeInt(FunCodResponce));
-            
-            MBAP = [transID; ProtID; Length; UnitID];
-            PDU = [FunCod];
-            Message = [MBAP,PDU];
-            
-            fwrite(ModBusTCP, Message,'int8');
-            UpdatedDataBase = DataBaseHolding;
+
             
             disp('Recived bad Request');
             return

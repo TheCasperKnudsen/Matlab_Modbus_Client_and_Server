@@ -19,11 +19,11 @@ function [Message,DataBaseHolding] = HandleFunctionCode6(TransID,ProtID,Length,U
         disp('Write Single Register - ERROR');       
     else
         %Save Data
-        DataBaseHolding(RegisterAdress) = swapbytes(RecivedData);
+        DataBaseHolding(RegisterAdress) = RecivedData;
 
         % Build PDU
         PrepedRegisterAdress      =  typecast(RegisterAdress,'uint8')';
-        PrepedRecivedData          =  Prep16BitData(RecivedData,'uint8')';
+        PrepedRecivedData         =  Prep16BitData(RecivedData);
         PDU  = [FunCod; PrepedRegisterAdress; PrepedRecivedData];
         
         %Build MBAP

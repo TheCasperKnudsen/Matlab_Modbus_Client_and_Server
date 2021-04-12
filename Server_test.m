@@ -1,12 +1,13 @@
 DataBaseHolding = uint16([111,222,333,444])
 DataBaseInput = uint16([11,22,33,44])
+DataBaseCoils = logical(0)
 
 while 1
-    ModBusTCP = openConnectionServer('192.168.87.134', 502)
+    ModBusTCP = openConnectionServer('192.168.100.123', 502)
     while ~ModBusTCP.BytesAvailable
         %wait for the response to be in the buffer
     end
-   [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding);
+   [DataBaseInput,DataBaseHolding] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding,DataBaseCoils);
    
    fclose(ModBusTCP);
    break

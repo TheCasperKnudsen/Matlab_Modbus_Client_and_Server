@@ -35,8 +35,9 @@ function ModBusTCP = openConnectionServer(ipaddress, port)
 end
 
 function [UpdatedDataInput,UpdatedDataBaseHolding,UpdatedCoils] = handleRequest(ModBusTCP,DataBaseInput,DataBaseHolding,DataBaseCoils)
+    UpdatedDataBaseHolding = DataBaseHolding; % In case Holding is not written
     UpdatedDataInput = DataBaseInput; % Input cannot be written
-    UpdatedCoils = DataBaseCoils;     % Input cannot be written  
+    UpdatedCoils = DataBaseCoils;     % Coils cannot be written  
     
     % Read MBAP
     TransID     = fread16Bit(ModBusTCP);
@@ -52,6 +53,7 @@ function [UpdatedDataInput,UpdatedDataBaseHolding,UpdatedCoils] = handleRequest(
             StartingAdress          = fread16Bit(ModBusTCP);
             NumberOfRegisters       = fread16Bit(ModBusTCP);
             Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,DataBaseInput);
+            
             fwrite(ModBusTCP, Message,'uint8');
             return
             
@@ -59,6 +61,7 @@ function [UpdatedDataInput,UpdatedDataBaseHolding,UpdatedCoils] = handleRequest(
             StartingAdress          = fread16Bit(ModBusTCP);
             NumberOfRegisters       = fread16Bit(ModBusTCP);
             Message = HandleFunctionCode3(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,DataBaseHolding);
+            
             fwrite(ModBusTCP, Message,'uint8');
             UpdatedDataBaseHolding = DataBaseHolding; 
             return

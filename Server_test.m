@@ -63,25 +63,25 @@ function [UpdatedDataInput,UpdatedDataBaseHolding,UpdatedCoils] = handleRequest(
             UpdatedDataBaseHolding = DataBaseHolding; 
             return
             
-        case 6
+        case 6 % Write Single Register
             RegisterAdress          = fread16Bit(ModBusTCP);
             RecivedData             = fread16Bit(ModBusTCP);
-            [Message,DataBaseHolding] = HandleFunctionCode6(TransID,ProtID,Length,UnitID,FunCod,RegisterAdress,RecivedData,DataBaseHolding)
-            disp('Wrote Single Holding Register');
+            [Message,DataBaseHolding] = HandleFunctionCode6(TransID,ProtID,Length,UnitID,FunCod,RegisterAdress,RecivedData,DataBaseHolding);
+            
             fwrite(ModBusTCP, Message,'uint8');
             UpdatedDataBaseHolding = DataBaseHolding; 
             return
             
-        case 16
+        case 16 % Write Multiple Registers
             StartingAdress          = fread16Bit(ModBusTCP);
             NumberOfRegisters       = fread16Bit(ModBusTCP);
             ByteCount               = fread8Bit(ModBusTCP);
-            %Read Data from Modbus
             RecivedData = uint16(zeros(NumberOfRegisters,1));
             for index = 1:1:NumberOfRegisters
                 %Recives Little endian data
                 RecivedData(index) = fread16Bit(ModBusTCP);
             end
+            
             [Message,DataBaseHolding] = HandleFunctionCode16(TransID,ProtID,Length,UnitID,FunCod,StartingAdress,NumberOfRegisters,RecivedData,DataBaseHolding);
             fwrite(ModBusTCP, Message,'uint8');
             UpdatedDataBaseHolding = DataBaseHolding; 

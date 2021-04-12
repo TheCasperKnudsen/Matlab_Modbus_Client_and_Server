@@ -39,9 +39,3 @@ function [Message,DataBaseHolding] = HandleFunctionCode6(TransID,ProtID,Length,U
     Message = [MBAP; PDU];
 
 end
-
-function bool = IsExceeded(StartingIndex,Number,Array)
-    Size = length(Array);
-    bool = StartingIndex + Number -1 > Size;
-    return
-end

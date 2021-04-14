@@ -20,13 +20,8 @@ function [Message,DataBaseHolding] = HandleFunctionCode16(TransID,ProtID,Length,
         disp('Write Multiple Registers - ERROR');       
     else
         %Save Data
-        RecivedData = uint16(zeros(NumberOfRegisters,1));
         for index = 1:1:NumberOfRegisters
-            %Recives Little endian data
-            RecivedData(index) = fread16Bit(ModBusTCP);
-        end
-        for index = 1:1:NumberOfRegisters
-            DataBaseHolding(StartingAdress+index-1) = fread16Bit(ModBusTCP);
+            DataBaseHolding(StartingAdress+index-1) = RecivedData(index);
         end
         
         % Build PDU

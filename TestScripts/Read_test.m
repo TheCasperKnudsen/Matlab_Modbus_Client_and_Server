@@ -1,5 +1,5 @@
 
-address = '192.168.87.119' 
+address = '192.168.100.246' 
 port = 502 %port typically 502 for Modbus
 ModBusTCP = openConnection(address, port); %open the connection
 
@@ -45,7 +45,7 @@ function message = prepareReadingMessage(registry)
     % each of them to uint16, and used "bitor" to create a uint16 word when 
     % the MSB is the UnitID and the LSB is the function code
     Address_offset = int16(registry); % 16b Adress of the register
-    reg_number = int16(1);%number of register to read
+    reg_number = int16(3);%number of register to read
     message = [transID; ProtID; Lenght; UnitIDFunCod; Address_offset;reg_number];
 end
 
